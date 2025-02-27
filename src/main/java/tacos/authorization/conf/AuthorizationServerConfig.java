@@ -37,7 +37,11 @@ public class AuthorizationServerConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(rq -> rq.anyRequest().authenticated())
+                .authorizeHttpRequests(rq -> rq.requestMatchers("/oauth2/jwks")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated()
+                )
                 .formLogin(Customizer.withDefaults())
                 .with(OAuth2AuthorizationServerConfigurer.authorizationServer(), Customizer.withDefaults())
                 .build();
@@ -54,6 +58,8 @@ public class AuthorizationServerConfig {
                 .redirectUri("http://127.0.0.1:9090/login/oauth2/code/taco-admin-client")
                 .scope("writeIngredients")
                 .scope("deleteIngredients")
+                .scope("writeOrder")
+                .scope("readOrder")
                 .scope(OidcScopes.OPENID)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .build();
