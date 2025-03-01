@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -37,13 +38,24 @@ public class AuthorizationServerConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(rq -> rq.requestMatchers("/oauth2/jwks")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-                )
+                .authorizeHttpRequests(rq -> rq.anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
-                .with(OAuth2AuthorizationServerConfigurer.authorizationServer(), Customizer.withDefaults())
+                .with(
+                        OAuth2AuthorizationServerConfigurer
+                                .authorizationServer()
+                                .authorizationEndpoint(Customizer.withDefaults())
+                                .tokenEndpoint(Customizer.withDefaults())
+                                .oidc(Customizer.withDefaults()),
+                        Customizer.withDefaults()
+                )
+                .csrf(csrf -> csrf.disable())
+                .build();
+    }
+
+    @Bean
+    public AuthorizationServerSettings authorizationServerSettings() {
+        return AuthorizationServerSettings.builder()
+                .issuer("http://127.0.0.1:9000")
                 .build();
     }
 
